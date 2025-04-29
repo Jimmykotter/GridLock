@@ -1,37 +1,39 @@
 const typeDefs = `
-  type Profile {
-    _id: ID
-    name: String
-    email: String
-    password: String
-    skills: [String]!
-  }
+  # --- existing Profile/Auth types here ---
 
-  type Auth {
-    token: ID!
-    profile: Profile
-  }
-  
-  input ProfileInput {
-    name: String!
-    email: String!
-    password: String!
-  }
++  type Move {
++    player: ID!
++    position: Int!
++  }
+
++  type Game {
++    id: ID!
++    players: [Profile!]!
++    moves: [Move!]!
++    result: String!
++    playedAt: String!
++    createdAt: String!
++    updatedAt: String!
++  }
+
++  input MoveInput {
++    position: Int!
++  }
+
++  input CreateGameInput {
++    opponentId: ID!
++    moves: [MoveInput!]!      # initial moves (if any)
++  }
 
   type Query {
-    profiles: [Profile]!
-    profile(profileId: ID!): Profile
-    me: Profile
+    # --- existing queries ---
++   games: [Game!]!            # all games (admin)
++   myGames: [Game!]!          # only the authenticated user’s games
   }
 
   type Mutation {
-    addProfile(input: ProfileInput!): Auth
-    login(email: String!, password: String!): Auth
-
-    addSkill(profileId: ID!, skill: String!): Profile
-    removeProfile: Profile
-    removeSkill(skill: String!): Profile
+    # --- existing auth/profile mutations ---
++   createGame(input: CreateGameInput!): Game!
   }
 `;
-
 export default typeDefs;

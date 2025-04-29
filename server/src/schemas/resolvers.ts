@@ -1,103 +1,79 @@
-import { Profile } from '../models/index.js';
-import { signToken, AuthenticationError } from '../utils/auth.js';
+import { Profile, Game } from '../models';
+import { AuthenticationError } from '../utils/auth.js';
 
-interface Profile {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  skills: string[];
-}
-
-interface ProfileArgs {
-  profileId: string;
-}
-
-interface AddProfileArgs {
-  input:{
-    name: string;
-    email: string;
-    password: string;
-  }
-}
-
-interface AddSkillArgs {
-  profileId: string;
-  skill: string;
-}
-
-interface RemoveSkillArgs {
-  profileId: string;
-  skill: string;
-}
-
+// Define types for context and arguments
 interface Context {
-  user?: Profile;
+  user?: { _id: string }; // Adjust based on your actual user structure
+}
+
+interface AuthenticatedContext extends Context {
+  user: { _id: string }; // Make 'user' required
+}
+
+interface CreateGameInput {
+  input: {
+    opponentId: string;
+    moves: { position: string }[];
+  };
+}
+
+// Type guard to check if the user is authenticated
+function isAuthenticated(context: Context): context is AuthenticatedContext {
+  return context.user !== undefined;
 }
 
 const resolvers = {
   Query: {
-    profiles: async (): Promise<Profile[]> => {
-      return await Profile.find();
-    },
-    profile: async (_parent: any, { profileId }: ProfileArgs): Promise<Profile | null> => {
-      return await Profile.findOne({ _id: profileId });
-    },
-    me: async (_parent: any, _args: any, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOne({ _id: context.user._id });
+    games: async (_parent: unknown, _args: unknown, context: Context) => {
+      if (!isAuthenticated(context)) {
+        throw new AuthenticationError('User is not authenticated');
       }
-      throw AuthenticationError;
+
+      return Game.find(); // Optionally restrict to admin
+    },
+    myGames: async (_parent: unknown, _args: unknown, context: Context) => {
+      if (!isAuthenticated(context)) {
+        throw new AuthenticationError('User is not authenticated');
+      }
+
+      return Game.find({ players: context.user._id });
     },
   },
+
   Mutation: {
-    addProfile: async (_parent: any, { input }: AddProfileArgs): Promise<{ token: string; profile: Profile }> => {
-      const profile = await Profile.create({ ...input });
-      const token = signToken(profile.name, profile.email, profile._id);
-      return { token, profile };
+    createGame: async (
+      _parent: unknown,
+      { input }: CreateGameInput,
+      context: Context
+    ) => {
+      if (!isAuthenticated(context)) {
+        throw new AuthenticationError('User is not authenticated');
+      }
+
+      const userId = context.user._id;
+
+      // Build the players array (you + opponent)
+      const players = [userId, input.opponentId];
+      // Map moves to include user’s ID (you can adjust logic as needed)
+      const moves = input.moves.map((m) => ({
+        player: userId,
+        position: m.position,
+      }));
+
+      const newGame = await Game.create({
+        players,
+        moves,
+        result: 'pending', // initial
+      });
+
+      return newGame;
     },
-    login: async (_parent: any, { email, password }: { email: string; password: string }): Promise<{ token: string; profile: Profile }> => {
-      const profile = await Profile.findOne({ email });
-      if (!profile) {
-        throw AuthenticationError;
-      }
-      const correctPw = await profile.isCorrectPassword(password);
-      if (!correctPw) {
-        throw AuthenticationError;
-      }
-      const token = signToken(profile.name, profile.email, profile._id);
-      return { token, profile };
-    },
-    addSkill: async (_parent: any, { profileId, skill }: AddSkillArgs, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndUpdate(
-          { _id: profileId },
-          {
-            $addToSet: { skills: skill },
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
-        );
-      }
-      throw AuthenticationError;
-    },
-    removeProfile: async (_parent: any, _args: any, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndDelete({ _id: context.user._id });
-      }
-      throw AuthenticationError;
-    },
-    removeSkill: async (_parent: any, { skill }: RemoveSkillArgs, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndUpdate(
-          { _id: context.user._id },
-          { $pull: { skills: skill } },
-          { new: true }
-        );
-      }
-      throw AuthenticationError;
+  },
+
+  // Resolve nested Profile objects inside Game.players
+  Game: {
+    players: async (game: { players: string[] }) => {
+      return Profile.find({ _id: { $in: game.players } });
     },
   },
 };
