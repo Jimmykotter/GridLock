@@ -1,40 +1,27 @@
-import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import ReactDOM from 'react-dom/client';
+import {
+  createBrowserRouter,
+  RouterProvider
+} from 'react-router-dom';
 
-import App from './App.jsx';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import Signup from './pages/Signup';
-import Login from './pages/Login';
-import Error from './pages/Error';
+import App from './App';
+import LoginPage from './pages/login';
+import SignupPage from './pages/signup';
+import ErrorPage from './pages/errorPage';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <App />,
-    errorElement: <Error />,
+    errorElement: <ErrorPage />,        // not the built-in Error
     children: [
-      {
-        index: true,
-        element: <Home />
-      }, {
-        path: '/login',
-        element: <Login />
-      }, {
-        path: '/signup',
-        element: <Signup />
-      }, {
-        path: '/profiles/:profileId',
-        element: <Profile />
-      }, {
-        path: '/me',
-        element: <Profile />
-      }
+      { index: true, element: <LoginPage /> }, 
+      { path: 'login', element: <LoginPage /> },          // renders at "/"
+      { path: 'signup', element: <SignupPage /> },         // "/login"
     ]
-  },
+  }
 ]);
 
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<RouterProvider router={router} />);
-}
+ReactDOM
+  .createRoot(document.getElementById('root')!)
+  .render(<RouterProvider router={router} />);

@@ -1,102 +1,111 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthService from '../utils/auth';
+import '../styles/signup.css';
 
-import { useMutation } from '@apollo/client';
-import { ADD_PROFILE } from '../utils/mutations';
+interface SignupFormState {
+  username: string;
+  email: string;
+  password: string;
+}
 
-import Auth from '../utils/auth';
-
-const Signup = () => {
-  const [formState, setFormState] = useState({
-    name: '',
+const SignupPage: React.FC = () => {
+  const [form, setForm] = useState<SignupFormState>({
+    username: '',
     email: '',
-    password: '',
+    password: ''
   });
-  const [addProfile, { error, data }] = useMutation(ADD_PROFILE);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
-  // update state based on form input changes
-  const handleChange = (event: ChangeEvent) => {
-    const { name, value } = event.target as HTMLInputElement;
-
-    setFormState({
-      ...formState,
-      [name]: value,
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // submit form
-  const handleFormSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    console.log(formState);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const { username, email, password } = form;
+    if (!username || !email || !password) {
+      setError('All fields are required.');
+      return;
+    }
 
+    setLoading(true);
     try {
-      const { data } = await addProfile({
-        variables: { input: { ...formState } },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
 
-      Auth.login(data.addProfile.token);
-    } catch (e) {
-      console.error(e);
+      AuthService.login(data.token);
+      navigate('/');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unexpected error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="flex-row justify-center mb-4">
-      <div className="col-12 col-lg-10">
-        <div className="card">
-          <h4 className="card-header bg-dark text-light p-2">Sign Up</h4>
-          <div className="card-body">
-            {data ? (
-              <p>
-                Success! You may now head{' '}
-                <Link to="/">back to the homepage.</Link>
-              </p>
-            ) : (
-              <form onSubmit={handleFormSubmit}>
-                <input
-                  className="form-input"
-                  placeholder="Your username"
-                  name="name"
-                  type="text"
-                  value={formState.name}
-                  onChange={handleChange}
-                />
-                <input
-                  className="form-input"
-                  placeholder="Your email"
-                  name="email"
-                  type="email"
-                  value={formState.email}
-                  onChange={handleChange}
-                />
-                <input
-                  className="form-input"
-                  placeholder="******"
-                  name="password"
-                  type="password"
-                  value={formState.password}
-                  onChange={handleChange}
-                />
-                <button
-                  className="btn btn-block btn-info"
-                  style={{ cursor: 'pointer' }}
-                  type="submit"
-                >
-                  Submit
-                </button>
-              </form>
-            )}
-
-            {error && (
-              <div className="my-3 p-3 bg-danger text-white">
-                {error.message}
-              </div>
-            )}
-          </div>
+    <div className="signup-container">
+      <h1>Create Your Account</h1>
+      {error && <div className="error">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            className="signup-input"
+            value={form.username}
+            onChange={handleChange}
+            placeholder="johndoe"
+            autoComplete="username"
+          />
         </div>
-      </div>
-    </main>
+        <div>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            className="signup-input"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
+            autoComplete="email"
+          />
+        </div>
+        <div>
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            className="signup-input"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="********"
+            autoComplete="new-password"
+          />
+        </div>
+        <button type="submit" disabled={loading} className="signup-button">
+          {loading ? 'Creating account...' : 'Sign Up'}
+        </button>
+      </form>
+      <p className="signup-footer">
+        Already have an account?{' '}
+        <a href="/login" className="signup-link">Log in</a>
+      </p>
+    </div>
   );
 };
 
-export default Signup;
+export default SignupPage;
