@@ -1,0 +1,59 @@
+# .github/workflows/deploy.yml
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-server:
+    name: Deploy Server to Render
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      - name: Deploy server
+        uses: render-examples/render-deploy-action@v1
+        with:
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          serviceId: ${{ secrets.RENDER_SERVER_SERVICE_ID }}
+
+  deploy-client:
+    name: Deploy Client (Static) to Render
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install client deps
+        working-directory: client
+        run: npm ci
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
+
+      - name: Deploy client
+        uses: render-examples/render-deploy-action@v1
+        with:
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          serviceId: ${{ secrets.RENDER_CLIENT_SERVICE_ID }}
