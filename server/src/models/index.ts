@@ -1,3 +1,4 @@
-import Profile from './Profile.js';
+import { default as Profile } from './Profile.js';
+import { default as Game } from './Game.js';
 
-export { Profile };
+export { Profile, Game };
