@@ -5,8 +5,8 @@ import {
 } from 'react-router-dom';
 
 import App from './App';
-import LoginPage from './pages/login';
-import SignupPage from './pages/signup';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import ErrorPage from './pages/errorPage';
 
 const router = createBrowserRouter([
@@ -15,9 +15,9 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,        // not the built-in Error
     children: [
-      { index: true, element: <LoginPage /> }, 
-      { path: 'login', element: <LoginPage /> },          // renders at "/"
-      { path: 'signup', element: <SignupPage /> },         // "/login"
+      { index: true, element: <Login /> }, 
+      { path: 'login', element: <Login /> },          // renders at "/"
+      { path: 'signup', element: <Signup /> },         // "/login"
     ]
   }
 ]);
