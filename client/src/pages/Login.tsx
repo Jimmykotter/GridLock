@@ -52,6 +52,10 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const loggedIn = () => {
+    navigate("/gameboard")
+  }
+
   return (
     <div className="login-container">
       <h1>Login to Your Account</h1>
@@ -81,7 +85,7 @@ const LoginPage: React.FC = () => {
             autoComplete="current-password"
           />
         </div>
-        <button type="submit" disabled={loading}>
+        <button onClick={loggedIn} type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
