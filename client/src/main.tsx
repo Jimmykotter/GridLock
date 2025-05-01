@@ -5,19 +5,20 @@ import {
 } from 'react-router-dom';
 
 import App from './App';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+import LoginPage from './pages/Login';
+import SignupPage from './pages/Signup';
 import ErrorPage from './pages/errorPage';
+import GameBoard from './pages/gameboard';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <App />,
-    errorElement: <ErrorPage />,        // not the built-in Error
+    errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Login /> }, 
-      { path: 'login', element: <Login /> },          // renders at "/"
-      { path: 'signup', element: <Signup /> },         // "/login"
+      { index: true, element: <LoginPage /> }, 
+      { path: 'login', element: <LoginPage /> },          // renders at "/"
+      { path: 'signup', element: <SignupPage /> },         // "/login"
     ]
   }
 ]);
