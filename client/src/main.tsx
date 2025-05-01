@@ -8,7 +8,7 @@ import App from './App';
 import LoginPage from './pages/Login';
 import SignupPage from './pages/Signup';
 import ErrorPage from './pages/errorPage';
-import GameBoard from './pages/gameboard';
+// import GameBoard from './pages/gameboard';
 
 const router = createBrowserRouter([
   {
