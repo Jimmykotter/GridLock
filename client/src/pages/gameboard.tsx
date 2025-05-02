@@ -1,5 +1,4 @@
-// src/pages/GameBoard.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../styles/gameboard.css';
 
 type Cell = string | null;
