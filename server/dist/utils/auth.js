@@ -31,3 +31,5 @@ export class AuthenticationError extends GraphQLError {
     }
 }
 ;
+const token = jwt.sign({ data: 'example' }, 'your-secret-key', { algorithm: 'HS256' });
+jwt.verify(token, 'your-secret-key', { algorithms: ['HS256'] });

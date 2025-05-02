@@ -1,41 +1,31 @@
-import express from 'express';
-import path from 'node:path';
-import { ApolloServer } from '@apollo/server'; // Note: Import from @apollo/server-express
-import { expressMiddleware } from '@apollo/server/express4';
-import { typeDefs, resolvers } from './schemas/index.js';
-import { authenticateToken } from './utils/auth.js';
-import mongoose from 'mongoose';
+import path from 'path';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const connectToDatabase = async () => {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydb');
-};
-const server = new ApolloServer({
-    typeDefs,
-    resolvers
-});
-const startApolloServer = async () => {
-    await server.start();
-    await connectToDatabase();
-    const PORT = process.env.PORT || 3001;
-    const app = express();
-    app.use(express.urlencoded({ extended: false }));
-    app.use(express.json());
-    app.use('/graphql', expressMiddleware(server, {
-        context: authenticateToken
-    }));
-    if (process.env.NODE_ENV === 'production') {
-        app.use(express.static(path.join(__dirname, '../client/dist')));
-        app.get('*', (_req, res) => {
-            res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-        });
-    }
-    app.listen(PORT, () => {
-        console.log(`API server running on port ${PORT}!`);
-        console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import typeDefs from '../src/schemas/typeDefs';
+import resolvers from '../src/schemas/resolvers';
+import { connectDB } from '../src/config/connection.js';
+// Load environment variables
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+async function startServer() {
+    // 1. Connect to MongoDB Atlas (with ping verification)
+    const mongoClient = await connectDB();
+    // 2. Initialize Apollo GraphQL server
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: ({ req }) => ({ req, mongoClient })
     });
-};
-startApolloServer();
+    await server.start();
+    // 3. Create Express application and apply GraphQL middleware
+    const app = express();
+    server.applyMiddleware({ app });
+    // 4. Start listening
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`🚀  Server ready at http://localhost:${PORT}${server.graphqlPath}`));
+}
+// Start the server
+startServer().catch(error => {
+    console.error('❌  Server failed to start:', error);
+    process.exit(1);
+});
