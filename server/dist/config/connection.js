@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
-const connectionString = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/GridLock';
+const connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/defaultdb';
 mongoose.connect(connectionString, {
     serverSelectionTimeoutMS: 30000, // 30 seconds
 });
 mongoose.connection.on('connected', () => {
-    console.log('Connected to MongoDB');
+    console.log('Database connected successfully');
 });
 mongoose.connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
+    console.error('Database connection error:', err);
 });
 export default mongoose.connection;

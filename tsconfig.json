@@ -3,10 +3,11 @@
     "outDir": "./dist" /* Redirect output structure to the 'dist' directory. */,
     /* Language and Environment */
     "target": "ES2020" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "lib": ["ES2020", "DOM"] /* Specify library files to be included in the compilation. */,
     /* Modules */
     "module": "ESNext" /* Specify what module code is generated. */,
-    "moduleResolution": "Bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
-    "skipLibCheck": true,
+    "moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
+    "skipLibCheck": true /* Skip type checking of declaration files. */,
     /* JavaScript Support */
     "allowJs": true /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */,
     "checkJs": true /* Enable error reporting in type-checked JavaScript files. */,
@@ -15,10 +16,10 @@
     "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
     /* Type Checking */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "strict": true /* Enable all strict type-checking options. */,
+    "noUnusedLocals": true /* Enable error reporting for unused local variables. */,
+    "noUnusedParameters": true /* Raise an error on unused parameters. */,
+    "noFallthroughCasesInSwitch": true /* Enable error reporting for fallthrough cases in switch statements. */,
     "exactOptionalPropertyTypes": true /* Interpret optional property types as written, rather than adding 'undefined'. */,
     "noImplicitReturns": true /* Enable error reporting for codepaths that do not explicitly return in a function. */,
     "noImplicitOverride": true /* Ensure overriding members in derived classes are marked with an override modifier. */,
