@@ -1,5 +1,5 @@
 import express from 'express';
-import path from 'node:path';
+import path from 'path';
 import type { Request, Response } from 'express';
 import { ApolloServer } from '@apollo/server';// Note: Import from @apollo/server-express
 import { expressMiddleware } from '@apollo/server/express4';
@@ -18,10 +18,7 @@ const connectToDatabase = async () => {
 };
 
 // addded for render deploy
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Removed duplicate declarations of __filename and __dirname
 
 // app.use(express.static(path.join(__dirname, '../client/dist')));
 // 
