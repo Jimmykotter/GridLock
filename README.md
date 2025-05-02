@@ -96,4 +96,8 @@ Example placeholder:
 https://gridlock.onrender.com
 
 https://github.com/Jimmykotter/gridlock
+<<<<<<< HEAD
 https://github.com/Jimmykotter/bookscope
+=======
+https://github.com/Jimmykotter/bookscope
+>>>>>>> 7aad3e5f686201d6627c72107474f67e8364aa88

@@ -1,45 +1,39 @@
+import path from 'path';
+import dotenv from 'dotenv';
 import express from 'express';
-import path from 'node:path';
-import type { Request, Response } from 'express';
-import db from './config/connection.js'
-import { ApolloServer } from '@apollo/server';// Note: Import from @apollo/server-express
-import { expressMiddleware } from '@apollo/server/express4';
-import { typeDefs, resolvers } from './schemas/index.js';
-import { authenticateToken } from './utils/auth.js';
+import { ApolloServer } from 'apollo-server-express';
+import typeDefs from '../src/schemas/typeDefs';
+import resolvers from '../src/schemas/resolvers';
+import { connectDB } from '../src/config/connection.js';
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers
-});
+// Load environment variables
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const startApolloServer = async () => {
-  await server.start();
-  await db();
+async function startServer() {
+  // 1. Connect to MongoDB Atlas (with ping verification)
+  const mongoClient = await connectDB();
 
-  const PORT = process.env.PORT || 3001;
-  const app = express();
-
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
-
-  app.use('/graphql', expressMiddleware(server as any,
-    {
-      context: authenticateToken as any
-    }
-  ));
-
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-    });
-  }
-
-  app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+  // 2. Initialize Apollo GraphQL server
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => ({ req, mongoClient })
   });
-};
+  await server.start();
 
-startApolloServer();
+  // 3. Create Express application and apply GraphQL middleware
+  const app: express.Application = express();
+  server.applyMiddleware({ app });
+
+  // 4. Start listening
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () =>
+    console.log(`🚀  Server ready at http://localhost:${PORT}${server.graphqlPath}`)
+  );
+}
+
+// Start the server
+startServer().catch(error => {
+  console.error('❌  Server failed to start:', error);
+  process.exit(1);
+});
