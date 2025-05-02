@@ -1,247 +1,112 @@
-// // // Inside GameBoard.tsx
+import { useEffect, useState } from 'react';
+import '../styles/gameboard.css';
 
-// import { useEffect, useState } from "react";
-
-// export default function GameBoard() {
-//   const PLAYER_SYMBOL = "X";
-//   const AI_SYMBOL = "O";
-//   const STARTING_BOARD = Array(9).fill(null);
-
-//   const [board, setBoard] = useState(STARTING_BOARD); // 9 squares
-//   const [currentPlayer, setCurrentPlayer] = useState(PLAYER_SYMBOL);
-//   const [winner, setWinner] = useState<string | null>(null);
-
-//   //start game immediately on render
-//   function startGame() {
-//     //coinflip on first game to see who starts (ideally)
-//     // winner goes first otherwise (ideally)
-//     setBoard(STARTING_BOARD);
-//     setCurrentPlayer(PLAYER_SYMBOL);
-//     setWinner(null);
-//   }
-
-//   useEffect(startGame, []);
-//   useEffect(function () {
-//     checkWin(board);
-//   });
-
-//   // see whos turn it is
-//   useEffect(
-//     function () {
-//       if (currentPlayer !== AI_SYMBOL) {
-//         return;
-//       }
-
-//       function getAiMove() {
-//         // make API request here*
-//       }
-//       getAiMove();
-//     },
-//     [currentPlayer]
-//   );
-//   // check if somebody won:
-//   // leave board and display message:
-//   // render button for play again
-//   // render button for see player stats
-  
-//   function checkWin(board: (string | null)[]) {
-//     const winCombos = [
-//       [0, 1, 2],
-//       [3, 4, 5],
-//       [6, 7, 8], // rows
-//       [0, 3, 6],
-//       [1, 4, 7],
-//       [2, 5, 8], // columns
-//       [0, 4, 8],
-//       [2, 4, 6], // diagonals
-//     ];
-
-//     // for (let i = 0; i<winCombos.length; i++){
-//     //   const combo = winCombos[i]
-//     // }
-
-//     for (let combo of winCombos) {
-//       const [a, b, c] = combo;
-
-//       // check that all slots have a value
-//       if (!board[a] || !board[b] || !board[c]) {
-//         continue;
-//       }
-
-//       // check if board contains winning combo
-//       if (board[a] === board[b] && board[b] === board[c]) {
-//         setWinner(board[a]);
-//       }
-//     }
-// return (
-//   <div>
-//   {winner && <p>{winner} wins!</p>}
-//   <button onClick={startGame}>Start New Game</button>
-//   <button onClick={() => alert("Player stats feature coming soon!")}>
-//     View Stats
-//   </button>
-//   </div>
-// );
-
-//   }
-
-//   function handleCellClick(index: number) {
-//     if (currentPlayer !== PLAYER_SYMBOL || board[index]) return; // Ignore if not player's turn or already filled
-
-//     const newBoard = [...board];
-//     newBoard[index] = PLAYER_SYMBOL; // Player always plays X
-//     setBoard(newBoard);
-//     setCurrentPlayer(AI_SYMBOL); // Switch to AI's turn
-//   }
-
-//   return (
-//     <div
-//       style={{
-//         display: "grid",
-//         gridTemplateColumns: "repeat(3, 100px)",
-//         gap: "5px",
-
-//       }}
-//     >
-//       {board.map((cell, idx) => (
-//         <button
-//           key={idx}
-//           onClick={() => handleCellClick(idx)}
-//           style={{ width: "100px", height: "100px", fontSize: "32px" }}
-//           title={!cell ? `make a move on square ${idx + 1}` : ``}
-//           disabled={cell ? true : false}
-//         >
-//           {cell}
-//         </button>
-//       ))}
-//     </div>
-//   );
-// }
-
-// Inside GameBoard.tsx
-
-import { useEffect, useState } from "react";
+type Cell = string | null;
+const PLAYER_SYMBOL: Cell = 'X';
+const AI_SYMBOL:      Cell = 'O';
+const STARTING_BOARD: Cell[] = Array(9).fill(null);
 
 export default function GameBoard() {
-  const PLAYER_SYMBOL = "X";
-  const AI_SYMBOL = "O";
-  const STARTING_BOARD = Array(9).fill(null);
+  const [board, setBoard] = useState<Cell[]>([...STARTING_BOARD]);
+  const [currentPlayer, setCurrentPlayer] = useState<Cell>(PLAYER_SYMBOL);
+  const [winner, setWinner] = useState<Cell>(null);
 
-  const [board, setBoard] = useState<(string | null)[]>(STARTING_BOARD);
-  const [currentPlayer, setCurrentPlayer] = useState(PLAYER_SYMBOL);
-  const [winner, setWinner] = useState<string | null>(null);
-
-  function startGame() {
-    setBoard(STARTING_BOARD);
+  const startGame = () => {
+    setBoard([...STARTING_BOARD]);
     setCurrentPlayer(PLAYER_SYMBOL);
     setWinner(null);
-  }
+  };
 
-  useEffect(startGame, []); // ✅ Correct - start game on mount
+  useEffect(() => {
+    startGame();
+  }, []);
 
   useEffect(() => {
     checkWin(board);
-  }, [board]); 
-  // ✅ Changed: Previously missing dependency array in checkWin useEffect (before it was running on *every* render).
+  }, [board]);
 
   useEffect(() => {
     if (currentPlayer !== AI_SYMBOL || winner) return;
-    // ✅ Added winner check so AI doesn't move after game over
 
-    function getAiMove() {
-      const emptyIndexes = board
-        .map((cell, idx) => (cell === null ? idx : null))
-        .filter((idx) => idx !== null) as number[];
-
-      if (emptyIndexes.length === 0) return; // no available moves
+    const getAiMove = () => {
+      const emptyIndexes = board.reduce<number[]>((acc, cell, idx) => {
+        if (cell === null) acc.push(idx);
+        return acc;
+      }, []);
+      if (emptyIndexes.length === 0) return;
 
       const randomMove =
         emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
 
-      const newBoard = [...board];
-      newBoard[randomMove] = AI_SYMBOL;
-      setBoard(newBoard);
-      setCurrentPlayer(PLAYER_SYMBOL); // return turn to human
-    }
+      setBoard(prev => {
+        const next = [...prev];
+        next[randomMove] = AI_SYMBOL;
+        return next;
+      });
+      setCurrentPlayer(PLAYER_SYMBOL);
+    };
 
-    setTimeout(getAiMove, 750); 
-    // ✅ Kept your basic idea, just slight delay for "thinking" effect
-  }, [currentPlayer, board, winner]); 
-  // ✅ Added winner to dependency array for safety
+    const timer = setTimeout(getAiMove, 750);
+    return () => clearTimeout(timer);
+  }, [currentPlayer, board, winner]);
 
-  function checkWin(board: (string | null)[]) {
-    const winCombos = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
+  const checkWin = (bd: Cell[]) => {
+    const combos = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6],
     ];
-
-    for (let combo of winCombos) {
-      const [a, b, c] = combo;
-      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-        setWinner(board[a]);
+    for (const [a,b,c] of combos) {
+      if (bd[a] && bd[a] === bd[b] && bd[b] === bd[c]) {
+        setWinner(bd[a]);
         return;
       }
     }
-  }
+  };
 
-  function handleCellClick(index: number) {
-    if (currentPlayer !== PLAYER_SYMBOL || board[index] || winner) return;
-    // ✅ Added winner check: prevents player from clicking after game ends
+  const handleCellClick = (i: number) => {
+    if (currentPlayer !== PLAYER_SYMBOL || board[i] !== null || winner) return;
 
-    const newBoard = [...board];
-    newBoard[index] = PLAYER_SYMBOL;
-    setBoard(newBoard);
-    setCurrentPlayer(AI_SYMBOL); // Switch to AI
-  }
+    setBoard(prev => {
+      const next = [...prev];
+      next[i] = PLAYER_SYMBOL;
+      return next;
+    });
+    setCurrentPlayer(AI_SYMBOL);
+  };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {winner && <h2>{winner} wins!</h2>}
+    <div className="gameboard-container">
+      {winner && (
+        <div
+          className={`winner-text ${
+            winner === PLAYER_SYMBOL ? 'player' : 'ai'
+          }`}
+        >
+          {winner} wins!
+        </div>
+      )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 100px)",
-          gap: "5px",
-          marginBottom: "20px",
-        }}
-      >
+      <div className="gameboard-grid">
         {board.map((cell, idx) => (
           <button
             key={idx}
             onClick={() => handleCellClick(idx)}
-            style={{
-              width: "100px",
-              height: "100px",
-              fontSize: "32px",
-            }}
-            title={!cell ? `make a move on square ${idx + 1}` : ""}
+            className={`cell-button ${
+              cell === PLAYER_SYMBOL ? 'player' :
+              cell === AI_SYMBOL     ? 'ai'     : ''
+            }`}
+            title={cell === null ? `Make a move on square ${idx + 1}` : ''}
             disabled={cell !== null || winner !== null}
-            // ✅ Small fix: disable button if the square is filled or someone won
           >
-            {cell || ""}
+            {cell ?? ''}
           </button>
         ))}
       </div>
 
-      {/* ✅ Move the two buttons *outside* of checkWin — must always render properly */}
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div className="gameboard-controls">
         <button onClick={startGame}>Play Again</button>
-        <button onClick={() => alert("Player stats feature coming soon!")}>
+        <button onClick={() => alert('Player stats feature coming soon!')}>
           View Stats
         </button>
       </div>
