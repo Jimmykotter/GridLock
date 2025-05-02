@@ -121,6 +121,10 @@
 // Inside GameBoard.tsx
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+
+
+
 
 export default function GameBoard() {
   const PLAYER_SYMBOL = "X";
@@ -130,6 +134,8 @@ export default function GameBoard() {
   const [board, setBoard] = useState<(string | null)[]>(STARTING_BOARD);
   const [currentPlayer, setCurrentPlayer] = useState(PLAYER_SYMBOL);
   const [winner, setWinner] = useState<string | null>(null);
+
+  const navigate = useNavigate(); // Initialize useNavigate
 
   function startGame() {
     setBoard(STARTING_BOARD);
@@ -241,7 +247,7 @@ export default function GameBoard() {
       {/* ✅ Move the two buttons *outside* of checkWin — must always render properly */}
       <div style={{ display: "flex", gap: "10px" }}>
         <button onClick={startGame}>Play Again</button>
-        <button onClick={() => alert("Player stats feature coming soon!")}>
+        <button onClick={() => navigate("/stats")}>
           View Stats
         </button>
       </div>

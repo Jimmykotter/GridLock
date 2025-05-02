@@ -9,6 +9,7 @@ import LoginPage from './pages/Login';
 import SignupPage from './pages/Signup';
 import ErrorPage from './pages/errorPage';
 import GameBoard from './pages/gameboard';
+import Stats from './pages/Stats';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
       { path: "login",     element: <LoginPage />   },
       { path: "signup",    element: <SignupPage />  },
       { path: "gameboard", element: <GameBoard />   },
+      { path: 'stats', element: <Stats /> }
     ],            
   },            
 ]);
