@@ -3,18 +3,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString: string = process.env.MONGODB_URI || 'mongodb://localhost:27017/defaultdb';
+import mongoose from 'mongoose';
 
-mongoose.connect(connectionString, {
-  serverSelectionTimeoutMS: 30000, // 30 seconds
-});
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/GridLock';
 
-mongoose.connection.on('connected', () => {
-  console.log('Database connected successfully');
-});
+const db = async (): Promise<typeof mongoose.connection> => {
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('Database connected.');
+    return mongoose.connection;
+  } catch (error) {
+    console.error('Database connection error:', error);
+    throw new Error('Database connection failed.');
+  }
+};
 
-mongoose.connection.on('error', (err) => {
-  console.error('Database connection error:', err);
-});
-
-export default mongoose.connection;
+export default db;
