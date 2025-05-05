@@ -4,21 +4,7 @@ const typeDefs = `
     name: String
     email: String
     password: String
-
-    stats: Stats
-    gameHistory: [Game]
-  }
-
-  type Stats {
-    wins: Int
-    losses: Int
-    draws: Int
-  }
-
-  type Game {
-    _id: ID
-    result: String
-    createdAt: String
+    skills: [String]!
   }
 
   type Auth {
@@ -47,5 +33,4 @@ const typeDefs = `
     removeSkill(skill: String!): Profile
   }
 `;
-
 export default typeDefs;

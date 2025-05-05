@@ -44,7 +44,7 @@ const Stats = () => {
         </ul>
       )}
 
-      <Link to="/">
+      <Link to="/Stats">
         <button>Play Again</button>
       </Link>
     </div>

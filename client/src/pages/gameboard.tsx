@@ -247,7 +247,7 @@ export default function GameBoard() {
       {/* ✅ Move the two buttons *outside* of checkWin — must always render properly */}
       <div style={{ display: "flex", gap: "10px" }}>
         <button onClick={startGame}>Play Again</button>
-        <button onClick={() => navigate("/stats")}>
+        <button onClick={() => navigate("")}>
           View Stats
         </button>
       </div>
