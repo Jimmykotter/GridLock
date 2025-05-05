@@ -1,8 +1,5 @@
 import { Link, useRouteError, isRouteErrorResponse } from 'react-router-dom';
 
-/**
- * Placeholder error page for client-side routing errors.
- */
 export default function ErrorPage(): JSX.Element {
   const error = useRouteError();
   let message = 'An unexpected error occurred.';
