@@ -1,3 +1,2 @@
-import { default as Profile } from './Profile.js';
-import Game from './Game.js';
-export { Profile, Game };
+import User from './User';
+export default { User };

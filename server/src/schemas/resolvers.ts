@@ -1,105 +1,59 @@
-import { Profile } from '../models/index.js';
-import { signToken, AuthenticationError } from '../utils/auth.js';
-
-interface Profile {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  skills: string[];
-}
-
-interface ProfileArgs {
-  profileId: string;
-}
-
-interface AddProfileArgs {
-  input:{
-    name: string;
-    email: string;
-    password: string;
-  }
-}
-
-interface AddSkillArgs {
-  profileId: string;
-  skill: string;
-}
-
-interface RemoveSkillArgs {
-  profileId: string;
-  skill: string;
-}
-
-interface Context {
-  user?: Profile;
-}
+import User from "../models/User.js"
+import { signToken } from "../services/auth.js";
 
 const resolvers = {
   Query: {
-    profiles: async (): Promise<Profile[]> => {
-      return await Profile.find();
-    },
-    profile: async (_parent: any, { profileId }: ProfileArgs): Promise<Profile | null> => {
-      return await Profile.findOne({ _id: profileId });
-    },
-    me: async (_parent: any, _args: any, context: Context): Promise<Profile | null> => {
+    me: async (_: any, __: any, context: any) => {
       if (context.user) {
-        return await Profile.findOne({ _id: context.user._id });
+        const user = await User.findById(context.user._id);
+        return user;
       }
-      throw AuthenticationError;
+      throw new Error("Unauthorized");
     },
   },
   Mutation: {
-    addProfile: async (_parent: any, { input }: AddProfileArgs): Promise<{ token: string; profile: Profile }> => {
-      const profile = await Profile.create({ ...input });
-      const token = signToken(profile.name, profile.email, profile._id);
-      return { token, profile };
-    },
-    login: async (_parent: any, { email, password }: { email: string; password: string }): Promise<{ token: string; profile: Profile }> => {
-      const profile = await Profile.findOne({ email });
-      if (!profile) {
-        throw AuthenticationError;
-      }
-      const correctPw = await profile.isCorrectPassword(password);
-      if (!correctPw) {
-        throw AuthenticationError;
-      }
-      const token = signToken(profile.name, profile.email, profile._id);
-      return { token, profile };
-    },
-    addSkill: async (_parent: any, { profileId, skill }: AddSkillArgs, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndUpdate(
-          { _id: profileId },
-          {
-            $addToSet: { skills: skill },
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
-        );
-      }
-      throw AuthenticationError;
-    },
-    removeProfile: async (_parent: any, _args: any, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndDelete({ _id: context.user._id });
-      }
-      throw AuthenticationError;
-    },
-    removeSkill: async (_parent: any, { skill }: RemoveSkillArgs, context: Context): Promise<Profile | null> => {
-      if (context.user) {
-        return await Profile.findOneAndUpdate(
-          { _id: context.user._id },
-          { $pull: { skills: skill } },
-          { new: true }
-        );
-      }
-      throw AuthenticationError;
-    },
+    addUser : async (_: any, args : any) => {
+      const user = await User.create(args);
+      const token = signToken(user.username, user.email, user._id);
+      return { token, user };
   },
-};
 
-export default resolvers;
+    login: async (_: any, { email, password }: { email: string; password: string }) => {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new Error("Incorrect credentials");
+      }
+      const correctPw = await user.isCorrectPassword(password); 
+      if (!correctPw) {
+        throw new Error("Incorrect credentials");
+      }
+      const token = signToken(user.username, user.email, user._id);
+      return { token, user };
+  },
+  saveBook: async (_: any,  args : any, context: any) => {
+    console.log(context)
+    if (context.user) {
+      const updatedUser = await User.findByIdAndUpdate(
+        context.user._id,
+        { $addToSet: { savedBooks: args } },
+        { new: true, runValidators: true }
+      );
+      return updatedUser;
+    }
+    throw new Error("Unauthorized");
+  },
+  removeBook: async (_: any, { bookId }: { bookId: string }, context: any) => {
+    if (context.user) {
+      const updatedUser = await User.findByIdAndUpdate(
+        context.user._id,
+        { $pull: { savedBooks: { bookId } } },
+        { new: true }
+      );
+      return updatedUser;
+    }
+    throw new Error("Unauthorized");
+  },
+}
+}
+
+export default resolvers
