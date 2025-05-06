@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Profile from '../models/Profile';
-import profileSeeds from './profileData.json' assert { type: 'json' };
+import Profile from '../models/Profile.js';
+// Import seed data from profileData.json
+import profileSeeds from './profileData.json' with { type: 'json' };
 
 dotenv.config();
 
@@ -11,15 +12,15 @@ async function seed() {
   await mongoose.connect(uri);
   console.log('Connected to', uri);
 
-  // Hash before insert
+  // Hash passwords in seed data
   const hashedSeeds = await Promise.all(
-    profileSeeds.map(async (user) => ({
+    profileSeeds.map(async (user: { name: string; email: string; password: string; record: string[] }) => ({
       ...user,
       password: await bcrypt.hash(user.password, 10),
     }))
   );
 
-  // Optional: clean the collection first
+  // Clean the collection first
   if (!mongoose.connection.db) {
     throw new Error('Database connection is not initialized');
   }

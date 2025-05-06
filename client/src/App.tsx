@@ -1,4 +1,3 @@
-
 import {
   ApolloClient,
   InMemoryCache,
@@ -6,19 +5,17 @@ import {
   createHttpLink,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { Outlet } from 'react-router-dom';
-
-
-
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import { GameBoard } from './pages/gameboard'; // Ensure this component exists
+import { Signup } from './pages/Signup';
 const httpLink = createHttpLink({
   uri: '/graphql',
 });
 
-// Construct request middleware that will attach the JWT token to every request as an `authorization` header
+// Use the correct key for the token stored in local storage
 const authLink = setContext((_, { headers }) => {
-  // get the authentication token from local storage if it exists
-  const token = localStorage.getItem('id_token');
-  // return the headers to the context so httpLink can read them
+  const token = localStorage.getItem('token'); // Updated key to match your token
   return {
     headers: {
       ...headers,
@@ -28,7 +25,6 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const client = new ApolloClient({
-  // Set up our client to execute the `authLink` middleware prior to making the request to our GraphQL API
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
@@ -38,7 +34,12 @@ function App() {
     <ApolloProvider client={client}>
       <div className="flex-column justify-flex-start min-100-vh">
         <div className="container">
-          <Outlet />
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/gameboard" element={<GameBoard />} />
+          </Routes>
         </div>
       </div>
     </ApolloProvider>

@@ -1,58 +1,117 @@
+import { Router, Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Profile from '../models/Profile.js';
-import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
-import { Router } from 'express';
 
 const router = Router();
-// Middleware to extract user from JWT
-async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-const header = (req.headers as any).authorization?.split(' ')[1];
-if (!header) return res.status(401).json({ error: 'No token provided.' });
+const JWT_SECRET = process.env.JWT_SECRET_KEY!;
+if (!JWT_SECRET) {
+throw new Error('JWT\_SECRET\_KEY is not defined in environment variables');
+}
 
+// Public: Sign up new user
+router.post('/signup', async (req: Request, res: Response) => {
 try {
-  const { userId } = jwt.verify(header, process.env.JWT_SECRET_KEY!) as { userId: string };
-  const user = await Profile.findById(userId).select('-password');
-  if (!user) throw new Error();
-  (req as any).user = user;
-  next();
-  return;
-} catch {
-  return res.status(401).json({ error: 'Invalid token.' });
+const { name, email, password } = req.body;
+if (!name || !email || !password) {
+return res.status(400).json({ error: 'Name, email and password are required.' });
 }
+const existing = await Profile.findOne({ email });
+if (existing) {
+return res.status(409).json({ error: 'Email already in use.' });
 }
-
-// GET /api/auth/me
-router.get('/me', authMiddleware, (req: Request, res: Response) => {
-res.json({ user: (req as any).user });
+const hashed = await bcrypt.hash(password, 10);
+const user = await Profile.create({ name, email, password: hashed, record: [] });
+const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1d' });
+return res.json({
+token,
+user: {
+id: user._id,
+name: user.name,
+email: user.email,
+record: user.record
+}
+});
+} catch (err) {
+console.error('Signup error:', err);
+return res.status(500).json({ error: 'Server error during signup.' });
+}
 });
 
-// PATCH /api/auth/me
+// Public: Log in existing user
+router.post('/login', async (req: Request, res: Response) => {
+try {
+const { email, password } = req.body;
+const user = await Profile.findOne({ email });
+if (!user || !(await bcrypt.compare(password, user.password))) {
+return res.status(401).json({ error: 'Invalid credentials.' });
+}
+const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1d' });
+return res.json({
+token,
+user: {
+id: user._id,
+name: user.name,
+email: user.email,
+record: user.record
+}
+});
+} catch (err) {
+console.error('Login error:', err);
+return res.status(500).json({ error: 'Server error during login.' });
+}
+});
+
+// Middleware: Protect routes below
+function authMiddleware(req: Request, res: Response, next: NextFunction) {
+const authHeader = req.headers.authorization;
+if (!authHeader?.startsWith('Bearer ')) {
+return res.status(401).json({ error: 'No token provided.' });
+}
+const token = authHeader.split(' ')[1];
+try {
+const { userId } = jwt.verify(token, JWT_SECRET) as { userId: string };
+(req as any).userId = userId;
+return next();
+} catch {
+return res.status(401).json({ error: 'Invalid token.' });
+}
+}
+
+// Protected: Get current user
+router.get('/me', authMiddleware, async (req: Request, res: Response) => {
+try {
+const user = await Profile.findById((req as any).userId).select('-password');
+return res.json({ user });
+} catch (err) {
+console.error('/me error:', err);
+return res.status(500).json({ error: 'Server error.' });
+}
+});
+
+// Protected: Update current user
 router.patch('/me', authMiddleware, async (req: Request, res: Response) => {
 try {
-  const updates = req.body; // e.g. { name, password }
-  if (updates.password) {
-    updates.password = await bcrypt.hash(updates.password, 10);
-  }
-  const user = await Profile.findByIdAndUpdate(
-    (req as any).user._id,
-    updates,
-    { new: true, runValidators: true }
-  ).select('-password');
-  res.json({ user });
+const updates: any = {};
+if (req.body.name) updates.name = req.body.name;
+if (req.body.password) updates.password = await bcrypt.hash(req.body.password, 10);
+const user = await Profile.findByIdAndUpdate((req as any).userId, updates, { new: true }).select('-password');
+return res.json({ user });
 } catch (err) {
-  console.error('Update /me error:', err);
-  res.status(500).json({ error: 'Could not update profile.' });
+console.error('Update /me error:', err);
+return res.status(500).json({ error: 'Server error.' });
 }
 });
 
-// DELETE /api/auth/me
+// Protected: Delete current user
 router.delete('/me', authMiddleware, async (req: Request, res: Response) => {
 try {
-  await Profile.findByIdAndDelete((req as any).user._id);
-  res.json({ message: 'Account deleted.' });
+await Profile.findByIdAndDelete((req as any).userId);
+return res.json({ message: 'Account deleted.' });
 } catch (err) {
-  console.error('Delete /me error:', err);
-  res.status(500).json({ error: 'Could not delete account.' });
+console.error('Delete /me error:', err);
+return res.status(500).json({ error: 'Server error.' });
 }
 });
+
+export default router;

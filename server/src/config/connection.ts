@@ -1,3 +1,4 @@
+// server/src/config/connection.ts
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -8,8 +9,12 @@ const db = async () => {
   if (!uri) {
     throw new Error('MONGODB_URI is not defined in environment variables');
   }
-  await mongoose.connect(uri);
-  console.log('Database connected successfully to', uri);
+
+  await mongoose.connect(uri, {
+    dbName: 'GridLock',   // explicitly target your GridLock database
+  });
+
+  console.log('✅ Database connected successfully to GridLock');
 };
 
 export default db;
