@@ -1,39 +1,52 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import dotenv from 'dotenv';
-// **Your existing connection helper lives here:**
 import connection from './config/connection.js';
-// **Point at your GraphQL files under src/graphql:**
 import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
-// Import the authenticate function
 import { authenticateToken } from './utils/auth.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
-connection();
 
-async function start() {
-  const app = express();
-  app.use(express.json());
+async function startServer() {
+  try {
+    // Initialize database connection
+    await connection();
+    console.log('✅ Database connected successfully');
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context: async ({ req }) => {
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      const user = token ? await authenticateToken(token) : null;
-      return { user };
-    },
-  });
-  await server.start();
-  server.applyMiddleware({ app: app as express.Application, path: '/graphql' });
+    // Initialize Express app
+    const app = express();
+    app.use(express.json());
 
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    const url = `http://localhost:${PORT}${server.graphqlPath}`;
-    console.log(`🚀 GraphQL server ready at ${url}`);
-    console.log(`🌐 Open your browser and navigate to: ${url}`);
-  });
+    // Mount routes
+    app.use('/api/auth', authRoutes);
+
+    // Initialize Apollo Server
+    const server = new ApolloServer({
+      typeDefs,
+      resolvers,
+      context: async ({ req }) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        const user = token ? await authenticateToken(token) : null;
+        return { user };
+      },
+    });
+
+    await server.start();
+    server.applyMiddleware({ app, path: '/graphql' });
+
+    // Start the server
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => {
+      const url = `http://localhost:${PORT}${server.graphqlPath}`;
+      console.log(`🚀 GraphQL server ready at ${url}`);
+      console.log(`🌐 Open your browser and navigate to: ${url}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start the server:', error);
+    process.exit(1);
+  }
 }
 
-start();
+startServer();

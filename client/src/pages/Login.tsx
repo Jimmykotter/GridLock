@@ -1,99 +1,47 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthService from '../utils/auth';
-import '../styles/login.css';
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface LoginFormState {
-  email: string;
-  password: string;
-}
-
-const LoginPage: React.FC = () => {
-  const [form, setForm] = useState<LoginFormState>({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+export function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    const { email, password } = form;
-    if (!email || !password) {
-      setError('Both email and password are required.');
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      console.error("Login failed");
       return;
     }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-
-      AuthService.login(data.token);
-      navigate('/');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unexpected error';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
+    const { token } = await res.json();
+    localStorage.setItem("token", token);
+    navigate("/gameboard");
   };
-
-  const loggedIn = () => {
-    navigate("/gameboard")
-  }
 
   return (
     <div className="login-container">
-      <h1>Login to Your Account</h1>
-      {error && <div>{error}</div>}
+      <h1>Log In</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            autoComplete="username"
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="********"
-            autoComplete="current-password"
-          />
-        </div>
-        <button onClick={loggedIn} type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Log In</button>
       </form>
-      <p>
-        Don't have an account? <a href="/signup">Sign up</a>
-      </p>
     </div>
   );
-};
-
-export default LoginPage;
+}

@@ -1,14 +1,16 @@
 import ReactDOM from 'react-dom/client';
+import "./styles/login.css";
+import "./styles/signup.css";
 import {
   createBrowserRouter,
   RouterProvider
 } from 'react-router-dom';
 
 import App from './App';
-import LoginPage from './pages/Login';
-import SignupPage from './pages/Signup';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
 import ErrorPage from './pages/errorPage';
-import GameBoard from './pages/gameboard';
+import { GameBoard } from './pages/gameboard';
 
 const router = createBrowserRouter([
   {
@@ -16,9 +18,9 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true,  element: <LoginPage />   },
-      { path: "login",     element: <LoginPage />   },
-      { path: "signup",    element: <SignupPage />  },
+      { index: true,  element: <Login />   },
+      { path: "login",     element: <Login />   },
+      { path: "signup",    element: <Signup />  },
       { path: "gameboard", element: <GameBoard />   },
     ],            
   },            
