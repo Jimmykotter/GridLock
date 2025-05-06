@@ -7,29 +7,26 @@ import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
+// Removed duplicate import of fileURLToPath
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Removed duplicate declaration of __dirname
 
 const connectToDatabase = async () => {
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydb');
+  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/GridLock');
 };
 
 // addded for render deploy
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // app.use(express.static(path.join(__dirname, '../client/dist')));
-// 
-
+//
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 });
 
 const startApolloServer = async () => {
@@ -42,17 +39,18 @@ const startApolloServer = async () => {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
-  app.use('/graphql', expressMiddleware(server as any,
-    {
-      context: authenticateToken as any
-    }
-  ));
+  app.use(
+    "/graphql",
+    expressMiddleware(server as any, {
+      context: authenticateToken as any,
+    })
+  );
 
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
+  if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "../../client/dist")));
 
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    app.get("*", (_req: Request, res: Response) => {
+      res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
     });
   }
 
