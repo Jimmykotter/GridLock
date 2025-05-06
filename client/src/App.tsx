@@ -2,6 +2,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useTransition, animated } from '@react-spring/web';
 
+import "./styles/global.css"
 import LoginPage  from './pages/Login';
 import SignupPage from './pages/Signup';
 import GameBoard  from './pages/gameboard';

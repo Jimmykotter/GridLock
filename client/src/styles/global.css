@@ -1,0 +1,17 @@
+body {
+    position: relative;
+  }
+  
+  
+  .profile-image {
+    position: absolute;
+    top: 100px;         
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
