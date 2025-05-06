@@ -1,56 +1,41 @@
-import express from "express";
-import path from "node:path";
-import type { Request, Response } from "express";
-import db from "./config/connection.js";
-import { ApolloServer } from "@apollo/server"; // Note: Import from @apollo/server-express
-import { expressMiddleware } from "@apollo/server/express4";
-import { typeDefs, resolvers } from "./schemas/index.js";
-import { authenticateToken } from "./utils/auth.js";
-import { dirname } from "node:path";
+import dotenv from 'dotenv';
+dotenv.config();
 
-// addded for render deploy
-import { fileURLToPath } from "url";
+import express from 'express';
+import cors from 'cors';
+import db from './config/connection.js';
+import authRoutes from './routes/authRoutes.js';
+import startApollo from './startApollo.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const app = express();
 
-// app.use(express.static(path.join(__dirname, '../client/dist')));
-//
+// Enable CORS for your front‑end on port 3000
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+// Parse JSON bodies
+app.use(express.json());
 
-const startApolloServer = async () => {
-  await server.start();
-  await db();
+// Mount authentication routes (signup, login, and protected /me)
+app.use('/api/auth', authRoutes);
 
-  const PORT = process.env.PORT || 3001;
-  const app = express();
+// Mount GraphQL endpoint at /graphql
+startApollo(app);
 
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
-
-  app.use(
-    "/graphql",
-    expressMiddleware(server as any, {
-      context: authenticateToken as any,
-    })
-  );
-
-  if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../../client/dist")));
-
-    app.get("*", (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
+// Start the server after DB connection
+const PORT = process.env.PORT || 4000;
+db()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server listening on http://localhost:${PORT}`);
     });
-  }
-
-  app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+  })
+  .catch((err) => {
+    console.error('❌ Failed to connect to DB:', err);
+    process.exit(1);
   });
-};
 
-startApolloServer();

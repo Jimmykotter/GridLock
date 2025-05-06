@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import AuthService from '../utils/auth'
-import '../styles/login.css'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthService from '../utils/auth';
+import '../styles/login.css';
 
 interface LoginFormState {
   email: string
@@ -13,6 +13,14 @@ const LoginPage: React.FC = () => {
   const [error,  setError]   = useState<string | null>(null)
   const [loading,setLoading] = useState<boolean>(false)
   const navigate = useNavigate()
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/gameboard');
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -35,21 +43,19 @@ const LoginPage: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Login failed')
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
 
-      AuthService.login(data.token)
-      navigate('/gameboard')
+      AuthService.login(data.token);
+      navigate('/gameboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unexpected error')
     } finally {
       setLoading(false)
     }
-  }
-
-  const loggedIn = () => {
-    navigate("/gameboard")
   }
 
   return (
@@ -67,6 +73,7 @@ const LoginPage: React.FC = () => {
             onChange={handleChange}
             placeholder="you@example.com"
             autoComplete="username"
+            required
           />
         </div>
         <div>
@@ -79,10 +86,11 @@ const LoginPage: React.FC = () => {
             onChange={handleChange}
             placeholder="********"
             autoComplete="current-password"
+            required
           />
         </div>
-        <button onClick={loggedIn} type="submit" disabled={loading}>
-          {loading ? 'Logging in…' : 'Login'}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
       <p>
@@ -92,4 +100,4 @@ const LoginPage: React.FC = () => {
   )
 }
 
-export default LoginPage
+export default LoginPage;

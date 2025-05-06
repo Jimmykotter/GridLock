@@ -1,44 +1,46 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { useTransition, animated } from '@react-spring/web';
-import LoginPage from './pages/Login';
-import SignupPage from './pages/Signup';
-import GameBoard from './pages/gameboard';
-import ErrorPage from './pages/errorPage';
-import './styles/global.css';
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  createHttpLink,
+} from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import { GameBoard } from './pages/gameboard'; // Ensure this component exists
+import { Signup } from './pages/Signup';
+const httpLink = createHttpLink({
+  uri: '/graphql',
+});
 
-export default function App() {
-  const location = useLocation();
-  const transitions = useTransition(location, {
-    keys: location.pathname,
-    from:   { opacity: 0, transform: 'translateX(100%)' },
-    enter:  { opacity: 1, transform: 'translateX(0%)'    },
-    leave:  { opacity: 0, transform: 'translateX(-100%)' },
-    config: { duration: 500 },
-  });
+// Use the correct key for the token stored in local storage
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('token'); // Updated key to match your token
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
 
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
+function App() {
   return (
-    <div className="app-container">
-      <div className="route-container">
-        {transitions((style, loc) => (
-          <animated.div
-            style={{
-              ...style,
-              position: 'absolute',
-              top:      0,
-              left:     0,
-              width:    '100%',
-              height:   '100%',
-            }}
-          >
-            <Routes location={loc} key={loc.pathname}>
-              <Route path="/"          element={<LoginPage />}   />
-              <Route path="/login"     element={<LoginPage />}   />
-              <Route path="/signup"    element={<SignupPage />}  />
-              <Route path="/gameboard" element={<GameBoard />}   />
-              <Route path="*"          element={<ErrorPage />}   />
-            </Routes>
-          </animated.div>
-        ))}
+    <ApolloProvider client={client}>
+      <div className="flex-column justify-flex-start min-100-vh">
+        <div className="container">
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/gameboard" element={<GameBoard />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );

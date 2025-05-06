@@ -6,7 +6,10 @@ interface Profile {
   name: string;
   email: string;
   password: string;
-  skills: string[];
+  record: Array<{
+    wins: number;
+    loses: number;
+  }>;
 }
 
 interface ProfileArgs {
@@ -21,14 +24,14 @@ interface AddProfileArgs {
   }
 }
 
-interface AddSkillArgs {
+interface AddRecordArgs {
   profileId: string;
-  skill: string;
+  record: string;
 }
 
-interface RemoveSkillArgs {
+interface RemoveRecordArgs {
   profileId: string;
-  skill: string;
+  record: string;
 }
 
 interface Context {
@@ -68,12 +71,12 @@ const resolvers = {
       const token = signToken(profile.name, profile.email, profile._id);
       return { token, profile };
     },
-    addSkill: async (_parent: any, { profileId, skill }: AddSkillArgs, context: Context): Promise<Profile | null> => {
+    addrecord: async (_parent: any, { profileId, record }: AddRecordArgs, context: Context): Promise<Profile | null> => {
       if (context.user) {
         return await Profile.findOneAndUpdate(
           { _id: profileId },
           {
-            $addToSet: { skills: skill },
+            $addToSet: { records: record },
           },
           {
             new: true,
@@ -89,11 +92,11 @@ const resolvers = {
       }
       throw AuthenticationError;
     },
-    removeSkill: async (_parent: any, { skill }: RemoveSkillArgs, context: Context): Promise<Profile | null> => {
+    removerecord: async (_parent: any, { record }: RemoveRecordArgs, context: Context): Promise<Profile | null> => {
       if (context.user) {
         return await Profile.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { skills: skill } },
+          { $pull: { record: record} },
           { new: true }
         );
       }

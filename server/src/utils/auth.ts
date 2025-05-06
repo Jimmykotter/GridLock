@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
+import { Request, Response, NextFunction } from 'express';
 dotenv.config();
 
 export const authenticateToken = ({ req }: any) => {
@@ -33,7 +34,28 @@ export const signToken = (username: string, email: string, _id: unknown) => {
 
 export class AuthenticationError extends GraphQLError {
   constructor(message: string) {
-    super(message, undefined, undefined, undefined, ['UNAUTHENTICATED']);
+    super(message, {
+      extensions: {
+        code: 'UNAUTHENTICATED',
+      },
+    });
     Object.defineProperty(this, 'name', { value: 'AuthenticationError' });
   }
-};
+}
+
+export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    res.status(401).json({ error: 'No token provided.' });
+    return Promise.resolve();
+  }
+
+  try {
+    const { data } = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2h' }) as { data: any };
+    (req as any).user = data;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token.' });
+    return Promise.resolve();
+  }
+}
