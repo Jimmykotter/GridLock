@@ -1,17 +1,21 @@
-body {
-    position: relative;
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #141428;
+    min-height: 100vh;
+    padding-top: 2rem;        /* space above logo if you like */
   }
   
-  
-  .profile-image {
-    position: absolute;
-    top: 100px;         
-    left: 50%;
-    transform: translateX(-50%);
-    width: 400px;
-    height: 400px;
+  .page-logo {
+    width: 265px;
+    height: 265px;
     object-fit: contain;
-    pointer-events: none;
-    z-index: 10;
+    margin-bottom: 1rem;      /* pushes <App/> down, never overlaps */
+  }
+  
+  #root,
+  .App {                       /* or whatever your top‐level selector is */
+    width: 100%;
   }
   
