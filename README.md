@@ -32,12 +32,6 @@
 - [JWT](https://jwt.io/) – Authentication with JSON Web Tokens
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js) – Password hashing
 
-## GraphQL API
-
-**Queries**
-- `me` – Returns the current user's profile and game record
-- `games` – Returns recent games played by the user
-
 **Mutations**
 - `login(email, password)` – Logs in user and returns token
 - `addUser(username, email, password)` – Creates a new user and returns token
