@@ -137,37 +137,52 @@ export default function GameBoard() {
     setWinner(null);
   }
 
-  useEffect(startGame, []); // ✅ Correct - start game on mount
+  useEffect(startGame, []); //  Correct - start game on mount
+
+  // useEffect(() => {
+  //   console.log ("checking the board")
+  //   if (winner) return
+
+  // }, [board]); 
+  //  Changed: Previously missing dependency array in checkWin useEffect (before it was running on *every* render).
+
 
   useEffect(() => {
-    checkWin(board);
+    console.log("making AI move")
+
+    if (currentPlayer !== AI_SYMBOL||winner) return;
+    // //  Added winner check so AI doesn't move after game over
+   
+    // if (!winner){
+
+    // }
+    // getAiMove()
+  checkWin(board)
+    //  Kept your basic idea, just slight delay for "thinking" effect
+
   }, [board]); 
-  // ✅ Changed: Previously missing dependency array in checkWin useEffect (before it was running on *every* render).
+  //  Added winner to dependency array for safety
+  // checkWin(board);
+  // console.log (winner)
 
-  useEffect(() => {
-    if (currentPlayer !== AI_SYMBOL || winner) return;
-    // ✅ Added winner check so AI doesn't move after game over
+  function getAiMove() {
+    console.log("getAiMove",winner)
+    if (winner) return
+    const emptyIndexes = board
+      .map((cell, idx) => (cell === null ? idx : null))
+      .filter((idx) => idx !== null) as number[];
 
-    function getAiMove() {
-      const emptyIndexes = board
-        .map((cell, idx) => (cell === null ? idx : null))
-        .filter((idx) => idx !== null) as number[];
 
-      if (emptyIndexes.length === 0) return; // no available moves
+    if (emptyIndexes.length === 0) return; // no available moves
 
-      const randomMove =
-        emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+    const randomMove =
+      emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
 
-      const newBoard = [...board];
-      newBoard[randomMove] = AI_SYMBOL;
-      setBoard(newBoard);
-      setCurrentPlayer(PLAYER_SYMBOL); // return turn to human
-    }
-
-    setTimeout(getAiMove, 750); 
-    // ✅ Kept your basic idea, just slight delay for "thinking" effect
-  }, [currentPlayer, board, winner]); 
-  // ✅ Added winner to dependency array for safety
+    const newBoard = [...board];
+    newBoard[randomMove] = AI_SYMBOL;
+    setBoard(newBoard);
+    setCurrentPlayer(PLAYER_SYMBOL); // return turn to human
+  }
 
   function checkWin(board: (string | null)[]) {
     const winCombos = [
@@ -184,15 +199,20 @@ export default function GameBoard() {
     for (let combo of winCombos) {
       const [a, b, c] = combo;
       if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+        console.log("we found the winner",board[a])
         setWinner(board[a]);
         return;
       }
     }
+    if (!winner){
+            setTimeout(getAiMove, 750); 
+      // getAiMove()
+      }
   }
 
   function handleCellClick(index: number) {
     if (currentPlayer !== PLAYER_SYMBOL || board[index] || winner) return;
-    // ✅ Added winner check: prevents player from clicking after game ends
+    //  Added winner check: prevents player from clicking after game ends
 
     const newBoard = [...board];
     newBoard[index] = PLAYER_SYMBOL;
@@ -231,14 +251,14 @@ export default function GameBoard() {
             }}
             title={!cell ? `make a move on square ${idx + 1}` : ""}
             disabled={cell !== null || winner !== null}
-            // ✅ Small fix: disable button if the square is filled or someone won
+            //  Small fix: disable button if the square is filled or someone won
           >
             {cell || ""}
           </button>
         ))}
       </div>
 
-      {/* ✅ Move the two buttons *outside* of checkWin — must always render properly */}
+      {/*  Move the two buttons *outside* of checkWin — must always render properly */}
       <div style={{ display: "flex", gap: "10px" }}>
         <button onClick={startGame}>Play Again</button>
         <button onClick={() => alert("Player stats feature coming soon!")}>
@@ -248,3 +268,4 @@ export default function GameBoard() {
     </div>
   );
 }
+
