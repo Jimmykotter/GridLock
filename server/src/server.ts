@@ -10,7 +10,7 @@ import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
 
 // Import the authenticate function
-import { authenticateToken } from './utils/auth';
+import { authenticateToken } from './utils/auth.js';
 
 
 
