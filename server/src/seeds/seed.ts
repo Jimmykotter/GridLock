@@ -1,25 +1,38 @@
-import db from '../config/connection.js';
-import { Profile } from '../models/index.js';
-import profileSeeds from './profileData.json' with { type: "json" };
-import cleanDB from './cleanDB.js';
+import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Profile from '../models/Profile';
+import profileSeeds from './profileData.json' assert { type: 'json' };
 
-const seedDatabase = async (): Promise<void> => {
-  try {
-    await db();
-    await cleanDB();
+dotenv.config();
 
-    await Profile.insertMany(profileSeeds);
+async function seed() {
+  const uri = process.env.MONGODB_URI!;
+  await mongoose.connect(uri);
+  console.log('Connected to', uri);
 
-    console.log('Seeding completed successfully!');
-    process.exit(0);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error seeding database:', error.message);
-    } else {
-      console.error('Unknown error seeding database');
-    }
-    process.exit(1);
+  // Hash before insert
+  const hashedSeeds = await Promise.all(
+    profileSeeds.map(async (user) => ({
+      ...user,
+      password: await bcrypt.hash(user.password, 10),
+    }))
+  );
+
+  // Optional: clean the collection first
+  if (!mongoose.connection.db) {
+    throw new Error('Database connection is not initialized');
   }
-};
+  await mongoose.connection.db.collection('profiles').deleteMany({});
+  console.log('Cleaned DB');
 
-seedDatabase();
+  const result = await Profile.insertMany(hashedSeeds);
+  console.log(`Inserted ${result.length} users`);
+
+  process.exit(0);
+}
+
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

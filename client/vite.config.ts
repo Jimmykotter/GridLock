@@ -8,21 +8,25 @@ export default defineConfig({
     include: ['animejs']
   },
   server: {
-    port: 3000,
-    open: true,
+    port: 3000,    // your React app
+    open: true,    // auto‑open in browser
     proxy: {
-      // keep these so that /api and /graphql are forwarded to your back end
-      '/graphql': {
+      // REST endpoints
+      '/api': {
         target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false
       },
-      '/api': {
+      // GraphQL endpoint
+      '/graphql': {
         target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false
       }
     }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
-  // …any other build or resolve settings you might have…
 });

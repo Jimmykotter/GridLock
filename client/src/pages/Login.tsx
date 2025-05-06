@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export function Login() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("");          // <<< renamed
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -11,7 +11,8 @@ export function Login() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+    // wrong field name
+     body: JSON.stringify({ email, password }),         // now matches server
     });
     if (!res.ok) {
       console.error("Login failed");
@@ -36,7 +37,8 @@ export function Login() {
         <input
           type="password"
           placeholder="Password"
-          value={password}
+
+         value={password}
           onChange={e => setPassword(e.target.value)}
           required
         />

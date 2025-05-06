@@ -4,9 +4,8 @@ import dotenv from 'dotenv';
 import connection from './config/connection.js';
 import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
-import { authenticateToken } from './utils/auth.js';
-import authRoutes from './routes/authRoutes.js';
-
+import { authMiddleware } from './utils/auth.js'; // Make sure this is the Express middleware
+import jwt from 'jsonwebtoken';
 dotenv.config();
 
 async function startServer() {
@@ -19,16 +18,27 @@ async function startServer() {
     const app = express();
     app.use(express.json());
 
-    // Mount routes
-    app.use('/api/auth', authRoutes);
+    // Mount authentication middleware for REST endpoints
+    app.use('/api/auth', authMiddleware);
 
     // Initialize Apollo Server
     const server = new ApolloServer({
       typeDefs,
       resolvers,
       context: async ({ req }) => {
+        // For GraphQL, if you want to set user from token, you can process the token here too,
+        // or rely on your authMiddleware (if it's run on GraphQL requests)
         const token = req.headers.authorization?.replace('Bearer ', '');
-        const user = token ? await authenticateToken(token) : null;
+        let user = null;
+        if (token) {
+          try {
+            // Optionally, re-use token verification logic here
+            const { data } = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2hr' }) as { data: any };
+            user = data;
+          } catch (err) {
+            console.log('Invalid token for GraphQL context');
+          }
+        }
         return { user };
       },
     });

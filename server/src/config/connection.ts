@@ -9,8 +9,7 @@ const db = async () => {
     throw new Error('MONGODB_URI is not defined in environment variables');
   }
   await mongoose.connect(uri);
-  console.log('Database connected successfully');
+  console.log('Database connected successfully to', uri);
 };
 
 export default db;
-
