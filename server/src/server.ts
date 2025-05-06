@@ -1,56 +1,42 @@
-import express from "express";
-import path from "node:path";
-import type { Request, Response } from "express";
-import db from "./config/connection.js";
-import { ApolloServer } from "@apollo/server"; // Note: Import from @apollo/server-express
-import { expressMiddleware } from "@apollo/server/express4";
-import { typeDefs, resolvers } from "./schemas/index.js";
-import { authenticateToken } from "./utils/auth.js";
-import { dirname } from "node:path";
+import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
+import dotenv from 'dotenv';
 
-// addded for render deploy
-import { fileURLToPath } from "url";
+// **Your existing connection helper lives here:**
+import connection from './config/connection';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// **Point at your GraphQL files under src/graphql:**
+import { typeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 
-// app.use(express.static(path.join(__dirname, '../client/dist')));
-//
+// Import the authenticate function
+import { authenticateToken } from './utils/auth';
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
 
-const startApolloServer = async () => {
-  await server.start();
-  await db();
 
-  const PORT = process.env.PORT || 3001;
+dotenv.config();
+connection();
+
+async function start() {
   const app = express();
-
-  app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
-  app.use(
-    "/graphql",
-    expressMiddleware(server as any, {
-      context: authenticateToken as any,
-    })
-  );
-
-  if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../../client/dist")));
-
-    app.get("*", (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
-    });
-  }
-
-  app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: async ({ req }) => {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      const user = token ? await authenticateToken(token) : null;
+      return { user };
+    },
   });
-};
+  await server.start();
+  server.applyMiddleware({ app: app as express.Application, path: '/graphql' });
 
-startApolloServer();
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () =>
+    console.log(`🚀 GraphQL at http://localhost:${PORT}${server.graphqlPath}`)
+  );
+}
+
+start();
