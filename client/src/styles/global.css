@@ -1,0 +1,21 @@
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #141428;
+    min-height: 100vh;
+    padding-top: 2rem;        /* space above logo if you like */
+  }
+  
+  .page-logo {
+    width: 265px;
+    height: 265px;
+    object-fit: contain;
+    margin-bottom: 1rem;      /* pushes <App/> down, never overlaps */
+  }
+  
+  #root,
+  .App {                       /* or whatever your top‐level selector is */
+    width: 100%;
+  }
+  
