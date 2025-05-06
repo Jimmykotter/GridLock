@@ -1,18 +1,13 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import dotenv from 'dotenv';
-
 // **Your existing connection helper lives here:**
 import connection from './config/connection.js';
-
 // **Point at your GraphQL files under src/graphql:**
 import { typeDefs } from './graphql/schema.js';
 import { resolvers } from './graphql/resolvers.js';
-
 // Import the authenticate function
 import { authenticateToken } from './utils/auth.js';
-
-
 
 dotenv.config();
 connection();
@@ -34,9 +29,11 @@ async function start() {
   server.applyMiddleware({ app: app as express.Application, path: '/graphql' });
 
   const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () =>
-    console.log(`🚀 GraphQL at http://localhost:${PORT}${server.graphqlPath}`)
-  );
+  app.listen(PORT, () => {
+    const url = `http://localhost:${PORT}${server.graphqlPath}`;
+    console.log(`🚀 GraphQL server ready at ${url}`);
+    console.log(`🌐 Open your browser and navigate to: ${url}`);
+  });
 }
 
 start();

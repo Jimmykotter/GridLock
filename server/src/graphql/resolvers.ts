@@ -1,4 +1,4 @@
-import ProfileModel from '../models/Profile';
+import ProfileModel from '../models/Profile.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
