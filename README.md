@@ -32,11 +32,6 @@
 - [JWT](https://jwt.io/) – Authentication with JSON Web Tokens
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js) – Password hashing
 
-**Mutations**
-- `login(email, password)` – Logs in user and returns token
-- `addUser(username, email, password)` – Creates a new user and returns token
-- `recordGame(result)` – Records a game result (win, loss, tie) for the user
-
 ## Getting Started
 
 ### 1. Clone the repository
