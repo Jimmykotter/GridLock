@@ -1,56 +1,53 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthService from '../utils/auth';
-import '../styles/signup.css';
+import React, { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import AuthService from '../utils/auth'
+import '../styles/signup.css'
 
 interface SignupFormState {
-  username: string;
-  email: string;
-  password: string;
+  username: string
+  email:    string
+  password: string
 }
 
 const SignupPage: React.FC = () => {
-  const [form, setForm] = useState<SignupFormState>({
-    username: '',
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [form,    setForm]    = useState<SignupFormState>({ username: '', email: '', password: '' })
+  const [error,  setError]   = useState<string | null>(null)
+  const [loading,setLoading] = useState<boolean>(false)
+  const navigate = useNavigate()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    const { username, email, password } = form;
+    e.preventDefault()
+    setError(null)
+
+    const { username, email, password } = form
     if (!username || !email || !password) {
-      setError('All fields are required.');
-      return;
+      setError('All fields are required.')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Signup failed');
+        body: JSON.stringify({ username, email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Signup failed')
 
-      AuthService.login(data.token);
-      navigate('/');
+      AuthService.login(data.token)
+      navigate('/')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unexpected error');
+      setError(err instanceof Error ? err.message : 'Unexpected error')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="signup-container">
@@ -97,15 +94,14 @@ const SignupPage: React.FC = () => {
           />
         </div>
         <button type="submit" disabled={loading} className="signup-button">
-          {loading ? 'Creating account...' : 'Sign Up'}
+          {loading ? 'Creating account…' : 'Sign Up'}
         </button>
       </form>
-      <p className="signup-footer">
-        Already have an account?{' '}
-        <a href="/login" className="signup-link">Log in</a>
+      <p>
+        Already have an account? <Link to="/login">Log in</Link>
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default SignupPage;
+export default SignupPage
