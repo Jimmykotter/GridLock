@@ -13,7 +13,7 @@
 
 ## Screenshots
 
-![image](https://github.com/user-attachments/assets/example-placeholder.png)
+![image](https://github.com/user-attachments/assets/419b394c-90de-4073-9bc2-a7cea549bcb1)
 
 ## Built With
 
@@ -21,7 +21,7 @@
 - [React](https://reactjs.org/) – Frontend UI library
 - [Apollo Client](https://www.apollographql.com/docs/react/) – GraphQL client for managing API requests
 - [React Router](https://reactrouter.com/) – Client-side routing
-- [Chakra UI](https://chakra-ui.com/) – Component library for a polished, mobile-friendly design
+- Spring React - Animation
 
 **Backend**
 - [Node.js](https://nodejs.org/) – Runtime environment
@@ -86,14 +86,10 @@ This project is licensed under the [MIT License](LICENSE).
 **Jimmy**  
 - [GitHub](https://github.com/jimmykotter)  
 - [Email](mailto:Jimmykotter@gmail.com)
-
-*(Add your teammates here if working as a group.)*
+- krystopherherrera@gmail.com
 
 ## Link to Deployed Website
 
-*(Add this after deploying to Render!)*  
-Example placeholder:  
-https://gridlock.onrender.com
+https://gridlock-75x0.onrender.com/
 
 https://github.com/Jimmykotter/gridlock
-https://github.com/Jimmykotter/bookscope
