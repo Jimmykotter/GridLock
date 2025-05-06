@@ -21,7 +21,7 @@
 - [React](https://reactjs.org/) – Frontend UI library
 - [Apollo Client](https://www.apollographql.com/docs/react/) – GraphQL client for managing API requests
 - [React Router](https://reactrouter.com/) – Client-side routing
-- Spring React - Animation
+- [Spring React](https://www.react-spring.dev/docs/getting-started) - Animation
 
 **Backend**
 - [Node.js](https://nodejs.org/) – Runtime environment
@@ -83,13 +83,16 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Authors
 
-**Jimmy**  
-- [GitHub](https://github.com/jimmykotter)  
-- [Email](mailto:Jimmykotter@gmail.com)
+- Jimmykotter@gmail.com
 - krystopherherrera@gmail.com
+- leviking.lk@gmail.com
+- Aj.thompson8888@gmail.com
+
 
 ## Link to Deployed Website
 
 https://gridlock-75x0.onrender.com/
+
+## Link to Repo
 
 https://github.com/Jimmykotter/gridlock
