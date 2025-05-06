@@ -3,11 +3,11 @@ import { ApolloServer } from 'apollo-server-express';
 import dotenv from 'dotenv';
 
 // **Your existing connection helper lives here:**
-import connection from './config/connection';
+import connection from './config/connection.js';
 
 // **Point at your GraphQL files under src/graphql:**
-import { typeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
+import { typeDefs } from './graphql/schema.js';
+import { resolvers } from './graphql/resolvers.js';
 
 // Import the authenticate function
 import { authenticateToken } from './utils/auth';
