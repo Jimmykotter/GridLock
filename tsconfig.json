@@ -1,26 +1,43 @@
 {
   "compilerOptions": {
     /* Language and Environment */
-    "target": "ES2020" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "target": "ES2020",                          /* from existing config :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1} */
     /* Modules */
-    "module": "ESNext" /* Specify what module code is generated. */,
-    "moduleResolution": "Bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
-    "skipLibCheck": true,
+    "module": "ESNext",                          /* from existing config :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3} */
+    "moduleResolution": "Bundler",               /* from existing config :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5} */
+    "skipLibCheck": true,                        /* from existing config :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7} */
+
     /* JavaScript Support */
-    "allowJs": true /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */,
-    "checkJs": true /* Enable error reporting in type-checked JavaScript files. */,
+    "allowJs": true,                             /* from existing config :contentReference[oaicite:8]{index=8}:contentReference[oaicite:9]{index=9} */
+    "checkJs": true,                             /* from existing config :contentReference[oaicite:10]{index=10}:contentReference[oaicite:11]{index=11} */
+
     /* Interop Constraints */
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+    "esModuleInterop": true,                     /* from existing config :contentReference[oaicite:12]{index=12}:contentReference[oaicite:13]{index=13} */
+    "allowSyntheticDefaultImports": true,        /* from existing config :contentReference[oaicite:14]{index=14}:contentReference[oaicite:15]{index=15} */
+
+    /* File Name & Case */
+    "forceConsistentCasingInFileNames": true,    /* from existing config :contentReference[oaicite:16]{index=16}:contentReference[oaicite:17]{index=17} */
+
     /* Type Checking */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": true /* Interpret optional property types as written, rather than adding 'undefined'. */,
-    "noImplicitReturns": true /* Enable error reporting for codepaths that do not explicitly return in a function. */,
-    "noImplicitOverride": true /* Ensure overriding members in derived classes are marked with an override modifier. */,
-    "useUnknownInCatchVariables": true /* Ensure 'unknown' is used for catch clause variables. */
-  }
+    "strict": true,                              /* from existing config :contentReference[oaicite:18]{index=18}:contentReference[oaicite:19]{index=19} */
+    "noUnusedLocals": true,                      /* from existing config :contentReference[oaicite:20]{index=20}:contentReference[oaicite:21]{index=21} */
+    "noUnusedParameters": true,                  /* from existing config :contentReference[oaicite:22]{index=22}:contentReference[oaicite:23]{index=23} */
+    "noFallthroughCasesInSwitch": true,          /* from existing config :contentReference[oaicite:24]{index=24}:contentReference[oaicite:25]{index=25} */
+    "exactOptionalPropertyTypes": true,          /* from existing config :contentReference[oaicite:26]{index=26}:contentReference[oaicite:27]{index=27} */
+    "noImplicitReturns": true,                   /* from existing config :contentReference[oaicite:28]{index=28}:contentReference[oaicite:29]{index=29} */
+    "noImplicitOverride": true,                  /* from existing config :contentReference[oaicite:30]{index=30}:contentReference[oaicite:31]{index=31} */
+    "useUnknownInCatchVariables": true,          /* from existing config :contentReference[oaicite:32]{index=32}:contentReference[oaicite:33]{index=33} */
+
+    /* OUTPUT CONFIGURATION */
+    "rootDir": "server/src",                     /* where your TS source lives */
+    "outDir": "server/dist"                      /* where you want the compiled JS to go */
+  },
+  "include": [
+    "server/src/**/*"                            /* compile everything under server/src */ 
+  ],
+  "exclude": [
+    "node_modules",                              /* always exclude dependencies */
+    "server/dist",                               /* don’t treat emitted files as inputs */
+    "client/dist"                                /* same for your front‑end build folder */
+  ]
 }

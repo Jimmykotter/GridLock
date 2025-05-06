@@ -1,84 +1,53 @@
-import { useEffect, useState } from "react";
-import "../styles/gameboard.css";
+import { useState, useEffect } from "react";
 
-export default function GameBoard() {
-  const PLAYER_SYMBOL = "X";
-  const AI_SYMBOL = "O";
-  const STARTING_BOARD = Array(9).fill(null);
+export function GameBoard() {
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
+  const token = localStorage.getItem("token") || "";
 
-  const [board, setBoard] = useState<(string | null)[]>(STARTING_BOARD);
-  const [currentPlayer, setCurrentPlayer] = useState(PLAYER_SYMBOL);
-  const [winner, setWinner] = useState<string | null>(null);
+  const startGame = async () => {
+    const res = await fetch("/api/games", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) {
+      console.error("Failed to start game");
+      return;
+    }
+    const { gameId: id, board: initialBoard } = await res.json();
+    setGameId(id);
+    setBoard(initialBoard);
+  };
 
-  function startGame() {
-    setBoard(STARTING_BOARD);
-    setCurrentPlayer(PLAYER_SYMBOL);
-    setWinner(null);
-  }
-
-  useEffect(startGame, []);
+  const handleCellClick = async (idx: number) => {
+    if (!gameId || board[idx]) return;
+    const res = await fetch(`/api/games/${gameId}/move`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ position: idx }),
+    });
+    if (!res.ok) {
+      console.error("Move failed");
+      return;
+    }
+    const { board: updatedBoard } = await res.json();
+    setBoard(updatedBoard);
+  };
 
   useEffect(() => {
-    if (currentPlayer !== AI_SYMBOL || winner) return;
-    checkWin(board);
-  }, [board]);
-
-  function getAiMove() {
-    if (winner) return;
-    const emptyIndexes = board
-      .map((cell, idx) => (cell === null ? idx : null))
-      .filter((idx) => idx !== null) as number[];
-
-    if (emptyIndexes.length === 0) return;
-
-    const randomMove =
-      emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
-    const newBoard = [...board];
-    newBoard[randomMove] = AI_SYMBOL;
-    setBoard(newBoard);
-    setCurrentPlayer(PLAYER_SYMBOL);
-  }
-
-  function checkWin(board: (string | null)[]) {
-    const winCombos = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (let combo of winCombos) {
-      const [a, b, c] = combo;
-      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-        setWinner(board[a]);
-        return;
-      }
-    }
-
-    if (!winner) {
-      setTimeout(getAiMove, 750);
-    }
-  }
-
-  function handleCellClick(index: number) {
-    if (
-      currentPlayer !== PLAYER_SYMBOL ||
-      board[index] ||
-      winner
-    )
-      return;
-
-    const newBoard = [...board];
-    newBoard[index] = PLAYER_SYMBOL;
-    setBoard(newBoard);
-    setCurrentPlayer(AI_SYMBOL);
-  }
+    startGame();
+  }, []);
 
   return (
+    <div className="gameboard">
+      <h1>Tic‑Tac‑Toe</h1>
+      <div className="board-grid">
     <div className="gameboard-container">
       {winner && (
         <h2 className={`winner-text ${winner === PLAYER_SYMBOL ? "player" : "ai"}`}>
@@ -90,6 +59,7 @@ export default function GameBoard() {
         {board.map((cell, idx) => (
           <button
             key={idx}
+            className="cell"
             onClick={() => handleCellClick(idx)}
             disabled={cell !== null || !!winner}
             className={`cell-button ${
@@ -101,7 +71,7 @@ export default function GameBoard() {
             }`}
             title={!cell ? `Make a move on square ${idx + 1}` : ""}
           >
-            {cell || ""}
+            {cell}
           </button>
         ))}
       </div>

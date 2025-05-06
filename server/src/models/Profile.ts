@@ -7,7 +7,10 @@ interface IProfile extends Document {
   name: string;
   email: string;
   password:string;
-  skills: string[];
+  record: Array<{
+    wins: number;
+    loses: number;
+  }>;
   isCorrectPassword(password: string): Promise<boolean>;
 }
 
@@ -31,7 +34,7 @@ const profileSchema = new Schema<IProfile>(
       required: true,
       minlength: 5,
     },
-    skills: [
+    record: [
       {
         type: String,
         trim: true,

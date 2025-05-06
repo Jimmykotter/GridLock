@@ -1,107 +1,47 @@
-import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import AuthService from '../utils/auth'
-import '../styles/signup.css'
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface SignupFormState {
-  username: string
-  email:    string
-  password: string
-}
+export function Signup() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-const SignupPage: React.FC = () => {
-  const [form,    setForm]    = useState<SignupFormState>({ username: '', email: '', password: '' })
-  const [error,  setError]   = useState<string | null>(null)
-  const [loading,setLoading] = useState<boolean>(false)
-  const navigate = useNavigate()
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    const { username, email, password } = form
-    if (!username || !email || !password) {
-      setError('All fields are required.')
-      return
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      console.error("Signup failed");
+      return;
     }
-
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Signup failed')
-
-      AuthService.login(data.token)
-      navigate('/')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unexpected error')
-    } finally {
-      setLoading(false)
-    }
-  }
+    const { token } = await res.json();
+    localStorage.setItem("token", token);
+    navigate("/gameboard");
+  };
 
   return (
     <div className="signup-container">
-      <h1>Create Your Account</h1>
-      {error && <div className="error">{error}</div>}
+      <h1>Sign Up</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            className="signup-input"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="johndoe"
-            autoComplete="username"
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            className="signup-input"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            autoComplete="email"
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="signup-input"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="********"
-            autoComplete="new-password"
-          />
-        </div>
-        <button type="submit" disabled={loading} className="signup-button">
-          {loading ? 'Creating account…' : 'Sign Up'}
-        </button>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Sign Up</button>
       </form>
-      <p>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
     </div>
-  )
+  );
 }
-
-export default SignupPage
